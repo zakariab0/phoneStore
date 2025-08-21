@@ -1597,7 +1597,16 @@ def user_delete(user_id):
         return redirect(url_for('user_list'))
     return render_template('user_confirm_delete.html', user=user)
 
+import webbrowser
+import threading
+import os
+
+def open_browser():
+    webbrowser.open_new("http://127.0.0.1:5000/")
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        threading.Timer(1.5, open_browser).start()
     app.run(debug=True)
