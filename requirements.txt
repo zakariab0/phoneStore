@@ -1,0 +1,10 @@
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-Login==0.6.3
+Flask-Bcrypt==1.0.1
+Flask-Admin==1.6.1
+WTForms==3.0.1
+PyMySQL==1.1.0
+cryptography==41.0.7
+requests==2.31.0
+schedule==1.2.0

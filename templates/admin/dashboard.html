@@ -1,0 +1,127 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<div class="container-fluid">
+    <h1>Panel de Control de la Tienda</h1>
+    
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Ventas de Hoy</div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ today_sales_count }} artículos</h4>
+                    <p class="card-text">${{ "%.2f"|format(today_revenue) }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Esta Semana</div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ week_sales_count }} artículos</h4>
+                    <p class="card-text">${{ "%.2f"|format(week_revenue) }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-header">Este Mes</div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ month_sales_count }} artículos</h4>
+                    <p class="card-text">${{ "%.2f"|format(month_revenue) }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-header">Promedio Mensual</div>
+                <div class="card-body">
+                    <h4 class="card-title">${{ "%.2f"|format(month_revenue / 30) if month_revenue > 0 else 0 }}</h4>
+                    <p class="card-text">por día</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Productos Más Vendidos (Esta Semana)</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_items %}
+                    <ul class="list-group list-group-flush">
+                        {% for item_name, quantity in top_items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ item_name }}
+                            <span class="badge badge-primary badge-pill">{{ quantity }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>No hay ventas esta semana</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Productos Más Vendidos (Este Mes)</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_items_month %}
+                    <ul class="list-group list-group-flush">
+                        {% for item_name, quantity in top_items_month %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ item_name }}
+                            <span class="badge badge-success badge-pill">{{ quantity }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>No hay ventas este mes</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Rendimiento de Empleados (Esta Semana)</h5>
+                </div>
+                <div class="card-body">
+                    {% if worker_performance %}
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Empleado</th>
+                                <th>Artículos Vendidos</th>
+                                <th>Ingresos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for worker_email, stats in worker_performance.items() %}
+                            <tr>
+                                <td>{{ worker_email }}</td>
+                                <td>{{ stats.count }}</td>
+                                <td>${{ "%.2f"|format(stats.revenue) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No hay ventas esta semana</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

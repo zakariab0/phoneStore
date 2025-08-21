@@ -1,0 +1,232 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<div class="container-fluid">
+    <h1>Panel de Trabajador</h1>
+    
+    <!-- Cash Declaration Section -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">💰 Declaración de Caja</h5>
+                </div>
+                <div class="card-body">
+                    {% if cash_declared %}
+                        <div class="alert alert-success">
+                            <h6>✅ Caja Declarada Hoy</h6>
+                            <p class="mb-1"><strong>Caja Inicial:</strong> ${{ "%.2f"|format(cash_declared.opening_cash) }}</p>
+                            <p class="mb-1"><strong>Declarado por:</strong> {{ cash_declared.worker.name }}</p>
+                            <p class="mb-0"><strong>Hora:</strong> {{ cash_declared.created_at.strftime('%H:%M') }}</p>
+                        </div>
+                        <div class="alert alert-info">
+                            <h6>📊 Ventas de Hoy</h6>
+                            <p class="mb-1"><strong>Ventas:</strong> {{ today_sales_count }} transacciones</p>
+                            <p class="mb-1"><strong>Ingresos:</strong> ${{ "%.2f"|format(today_revenue) }}</p>
+                            <p class="mb-0"><strong>Caja Esperada:</strong> ${{ "%.2f"|format(cash_declared.opening_cash + today_revenue) }}</p>
+                        </div>
+                    {% else %}
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label for="opening_cash" class="form-label">💵 Cantidad en Caja</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="opening_cash" 
+                                           name="opening_cash" 
+                                           step="0.01" 
+                                           min="0" 
+                                           required 
+                                           placeholder="0.00">
+                                </div>
+                                <div class="form-text">Declara la cantidad de dinero disponible en la caja al inicio del día.</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                📋 Declarar Caja
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">📈 Resumen de Hoy</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h3 class="text-primary">{{ today_sales_count }}</h3>
+                                <p class="text-muted">Ventas Hoy</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h3 class="text-success">${{ "%.2f"|format(today_revenue) }}</h3>
+                                <p class="text-muted">Ingresos Hoy</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Inventory Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Total Teléfonos</div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ total_phones }}</h4>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Total Productos</div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ total_products }}</h4>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-header">Total Ventas</div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ total_sales }}</h4>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-header">Valor Inventario</div>
+                <div class="card-body">
+                    <h4 class="card-title">${{ "%.2f"|format(total_value) }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Low Stock Alerts -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📱 Teléfonos con Stock Bajo (≤5 items)</h5>
+                </div>
+                <div class="card-body">
+                    {% if low_stock_phones %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Marca</th>
+                                    <th>Modelo</th>
+                                    <th>Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for phone in low_stock_phones %}
+                                <tr>
+                                    <td>{{ phone.name }}</td>
+                                    <td>{{ phone.brand }}</td>
+                                    <td>{{ phone.model }}</td>
+                                    <td><span class="badge bg-danger">{{ phone.stock }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-success">¡Todos los teléfonos tienen stock suficiente!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📦 Productos con Stock Bajo (≤5 items)</h5>
+                </div>
+                <div class="card-body">
+                    {% if low_stock_products %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Marca</th>
+                                    <th>Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in low_stock_products %}
+                                <tr>
+                                    <td>{{ product.name }}</td>
+                                    <td>{{ product.brand or 'N/A' }}</td>
+                                    <td><span class="badge bg-danger">{{ product.stock }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-success">¡Todos los productos tienen stock suficiente!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Sales -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>🛒 Ventas Recientes</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_sales %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sale in recent_sales %}
+                                <tr>
+                                    <td>{{ sale.sale_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ sale.item_type.title() }}</td>
+                                    <td>{{ sale.quantity }}</td>
+                                    <td>${{ "%.2f"|format(sale.selling_price) }}</td>
+                                    <td>${{ "%.2f"|format(sale.quantity * sale.selling_price) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p>No hay ventas recientes</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
